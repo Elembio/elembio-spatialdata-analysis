@@ -1,0 +1,164 @@
+# Default QC gate thresholds for qc.gates.QcGates.
+#
+# Each entry maps a metric name to threshold rules.
+# Supported keys per rule: warn_below, fail_below, warn_above, fail_above.
+# Additional or stricter thresholds can be layered on top with QcGates.overlay().
+
+# ---- Sequencing chemistry (bases2fastq) -------------------------------------
+# Tuned on ~160 runs (median %Q30 ~50): warn<50 / fail<30 flags the genuine low
+# tail.  (%Q30 is cycle-length-confounded — a relative per-batch-type signal
+# would be more robust.)
+overall_q30:
+  warn_below: 50
+  fail_below: 30
+
+# Tuned on ~160 runs (median Mean-Q ~24): fail<20 catches genuinely bad runs
+# (~p5); warn<25 is a quality nudge.  (Mean-Q is cycle-length-confounded — a
+# relative per-batch-type signal would be more robust.)
+quality_score_mean:
+  warn_below: 25
+  fail_below: 20
+
+# Post-trim polony retention = NumPolonies / NumPoloniesBeforeTrimming * 100
+# NOT a true pass-filter metric — this measures only whether the post-trim
+# read length cleared bases2fastq's minimum length floor (default ≥ 12bp).
+# No chastity / quality / adapter filtering applied.
+polony_post_trim:
+  warn_below: 80
+  fail_below: 60
+
+# ---- Cytometry (cells2stats) -----------------------------------------------
+nucleation_rate:
+  warn_below: 0.85
+  fail_below: 0.70
+
+confluency_pct:
+  warn_below: 20
+  fail_below: 15
+  warn_above: 70
+  fail_above: 80
+
+cell_count_per_well:
+  warn_below: 2000
+  fail_below: 1000
+
+# ---- Modality detection -----------------------------------------------------
+# Per-cell assignment rate from qc_metrics.total_assignment_rate (0-1 space).
+assignment_rate:
+  warn_below: 0.50
+  fail_below: 0.40
+
+# Run-level assignment rates per modality (percent space, 0-100).  Per-modality
+# because the healthy bands differ a lot by chemistry shape:
+# - 3p: multi-stage funnel (trim → align → assign → counted-in-cell);
+#       healthy ~50-70%.
+# - Protein: single-step barcode match; healthy 80-95%.
+# - OPS: single-step but stringent target matching; healthy ~5-25%.
+# These are conservative first-pass values.
+run_assignment_rate_threeprimeuntargeted:
+  warn_below: 40
+  fail_below: 25
+run_assignment_rate_protein:
+  warn_below: 80
+  fail_below: 60
+# Transcript: single-step barcode match like Protein; healthy ~80-95%.
+run_assignment_rate_transcript:
+  warn_below: 80
+  fail_below: 60
+run_assignment_rate_ops:
+  warn_below: 5
+  fail_below: 2
+
+# OPS "% Assigned cells" for NON-control (assay) sites — pre-computed as
+# ``PercentAssignedPureCells + PercentAssignedMixedCells`` per target
+# site (cells2stats/RunStats.json::TargetStats).  Percent space (0-100).
+# Healthy OPS runs should put >= 50% of segmented cells into a confident
+# target assignment; below 50% suggests the segmentation / barcode-call
+# pipeline is leaving too many cells without a dominant target call.  Only
+# used on runs with no flagged control (best-effort); the control panel uses
+# the inverted ``ops_control_assigned_cells`` gate below.
+ops_cells_assigned_rate:
+  warn_below: 50
+
+# ---- OPS control panel (IsControl=True) — distinct, often inverted gates ----
+# A multiplexed QC control spreads many targets across each cell, so its
+# *expected healthy* signature is the OPPOSITE of an assay site: lots of
+# targets per cell, lots of signal, but FEW cells that single-assign.  These
+# gates apply ONLY to the control site.
+
+# % Assigned cells (control) — INVERTED: low is healthy.  A control that starts
+# single-assigning cells means the multiplexing broke down.
+ops_control_assigned_cells:
+  warn_above: 2
+  fail_above: 5
+
+# Unique targets / cell (control) — many distinct targets per cell is the
+# point of a multiplexed control; too few means poor detection.
+ops_control_unique_targets:
+  warn_below: 7
+  fail_below: 5
+
+# Assigned counts / cell (control) — detection depth.
+ops_control_counts_per_cell:
+  warn_below: 10
+
+# Assigned counts / mm² (control) — area-normalised detection depth.
+ops_control_counts_per_mm2:
+  warn_below: 30000
+  fail_below: 10000
+
+# Assigned counts / mm² (OPS per-site) — OPS detection density is structurally
+# lower than transcriptome-wide modalities (a small target panel, not the whole
+# transcriptome), so it gates well below ``counts_per_mm2_per_batch`` (which
+# stays at 100k for Protein / Transcript / 3').  Pass ≥ 10k.
+ops_counts_per_mm2:
+  warn_below: 10000
+  fail_below: 5000
+
+# Barcode/target match-quality (Protein / Transcript Barcoding / OPS).
+# Percent of ASSIGNED polonies whose sequence had >= 1 base mismatch
+# relative to the expected barcode/target sequence (i.e. fraction of
+# assignments that weren't perfect matches).  Higher = more sloppy
+# matches; ideally <30%.  Reported by cells2stats as ``PercentMismatch``
+# in DemuxStats (Protein/Transcript) and PolonyAssignmentStats (OPS).
+mismatch_assignment_rate:
+  warn_above: 30
+  fail_above: 50
+
+# % Perfect = 100 - PercentMismatch (assigned polonies that matched with zero
+# base mismatches).  Complementary to mismatch_assignment_rate.  warn < 70 /
+# fail < 50 mirror the mismatch warn > 30 / fail > 50 thresholds.
+perfect_assignment_rate:
+  warn_below: 70
+  fail_below: 50
+
+# Fraction of MAPPED reads that resolved a winner in the selected feature set.
+# Older RunStats defined this metric differently (base-level coverage against a
+# 3'UTR BED), so these thresholds don't apply to those runs.
+#
+# Healthy and unhealthy 3' Untargeted runs separate cleanly (healthy wells
+# ~59-79%, unhealthy ~10-13%); warn sits near the lower edge of observed-healthy
+# and fail roughly centred in the gap.
+on_target_rate:
+  warn_below: 0.50
+  fail_below: 0.35
+
+# Per-batch density of counts (counts / mm² of cumulative cell area), evaluated
+# once per batch.  Counts/cell and genes/cell are deliberately ungated: cell
+# size confounds them, so we only QC the area-normalized form.
+counts_per_mm2_per_batch:
+  warn_below: 100000
+  fail_below: 50000
+
+# ---- 3 prime untargeted alignment -----------------------------------------
+alignment_rate:
+  warn_below: 0.70
+  fail_below: 0.50
+
+# Fraction of instrument reads that mapped but did not resolve in the SELECTED
+# feature set.  Higher = worse (more reads aligning to unselected genes, intronic,
+# intergenic, or unannotated regions).  Observed ~21-40% on healthy runs and
+# ~60-81% on unhealthy ones, so warn 0.30 / fail 0.50 discriminate correctly.
+no_feature_rate:
+  warn_above: 0.30
+  fail_above: 0.50

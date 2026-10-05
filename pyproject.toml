@@ -1,0 +1,137 @@
+[project]
+name = "elembio-spatialdata-analysis"
+version = "0.18.0"
+description = "Load, QC-filter, normalize, and plot Element Biosciences AVITI24 SpatialData objects."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Element Biosciences" }]
+keywords = ["spatialdata", "anndata", "single-cell", "spatial-omics", "aviti24", "bioinformatics"]
+requires-python = ">=3.12"
+dependencies = [
+    "anndata>=0.12.6,<0.13",
+    "boto3>=1.40.32",
+    "dask>=2025.2.0",
+    "igraph>=1.0.0",
+    "leidenalg>=0.11.0",
+    "matplotlib>=3.10.7",
+    "mudata>=0.3.3",
+    "pandas>=2.3.3",
+    "polars>=1.35.1",
+    "pyarrow>=19.0.0",
+    "pydantic>=2.12.4",
+    "pydeseq2>=0.5.3",
+    "s3fs>=0.4.2",
+    "scanpy>=1.11.4",
+    "setuptools>=65.0.0,<82",
+    "scikit-learn>=1.7.2",
+    "scikit-misc>=0.5.1",
+    "scipy>=1.16.2",
+    "spatialdata>=0.7.0,<0.8.0",
+    "squidpy>=1.8.0",
+    "tifffile>=2025.9.30",
+    "tqdm>=4.67.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/Elembio/elembio-spatialdata-analysis"
+Documentation = "https://github.com/Elembio/elembio-spatialdata-analysis/blob/main/docs/installation.md"
+Source = "https://github.com/Elembio/elembio-spatialdata-analysis"
+Changelog = "https://github.com/Elembio/elembio-spatialdata-analysis/blob/main/CHANGELOG.md"
+
+# Interactive / notebook tooling — not imported by the headless library.
+# Opt in with `uv sync --extra interactive`. Kept out of the base install so
+# downstream consumers that depend on this package as a library stay lean.
+[project.optional-dependencies]
+interactive = [
+    "altair[all]>=5.5.0",
+    "ipykernel>=7.1.0",
+    "jupyter>=1.1.1",
+    "marimo>=0.18.4",
+    "napari-spatialdata>=0.6.0",
+    "nbconvert>=7.16.6",
+    "papermill>=2.6.0",
+    "pyqt5>=5.15.11",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.0,<0.10.0"]
+build-backend = "uv_build"
+
+##########################
+# uv dependency group setup
+##########################
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "ruff>=0.14.4",
+    "ty>=0.0.1a26",
+]
+[tool.uv]
+# Runtime-only by default; contributors use `uv sync --group dev`.
+default-groups = []
+
+####################
+# Ruff configuration
+####################
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+src = ["src"]
+exclude = [
+    ".venv",
+    ".mypy_cache",
+    ".pytest_cache",
+    "/build",
+]
+unsafe-fixes = true
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "C4", "SIM", "PL", "RUF"]
+ignore = [
+    "E203",    # black-style slicing
+    "E402",    # allow module level imports anywhere
+    "E501",    # let formatter own line length
+    "PLR2004", # magic numbers
+    "PLR0913", # too many arguments
+    "PLR0917", # too many positional arguments — same complexity family as PLR0913
+    "PLR0912", # too many branches
+    "PLR0915", # too many statements
+    "PLR0911", # too many return statements — same complexity family as PLR0912/13/15
+    "PLC0415", # lazy / function-local imports are an intentional pattern here
+    "RUF001",  # ambiguous unicode in strings — Greek (ρ), math (×), 3'/5' nomenclature
+    "RUF002",  # ambiguous unicode in docstrings — same rationale
+    "RUF003",  # ambiguous unicode in comments — same rationale
+]
+
+#################
+# Ty configuration
+#################
+[tool.ty.environment]
+python-version = "3.12"
+root = ["./src"]
+
+[tool.ty.src]
+exclude = [
+    "tests/**",
+    "**/test_*.py",
+    ".venv/**",
+]
+
+[tool.ty.rules]
+unresolved-import = "warn"
+possibly-unresolved-reference = "warn"
+
+######################
+# Pytest configuration
+######################
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+]
+markers = [
+    "integration: optional tests that require a local SpatialData zarr (ESA_SPATIALDATA_DEMO)",
+]
