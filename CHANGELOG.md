@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.18.1]
+
+### Changed
+- Tutorials stream the public S3 `.zarr.zip` by default, so you can run them without
+  downloading the dataset first.
+
 ## [0.18.0] - 2026-10-02
 
 First public release.

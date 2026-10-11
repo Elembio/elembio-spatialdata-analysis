@@ -1,0 +1,32 @@
+# Local venv — must never ship into the image
+.venv/
+
+# Python caches / build artefacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+build/
+dist/
+*.egg-info/
+
+# Git / IDE
+.git/
+.gitignore
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# CI / Docker (not consumed at runtime)
+.gitlab-ci.yml
+.dockerignore
+Dockerfile*
+ci-utils/
+
+# Repo dirs not needed inside the image
+tutorials/
+docs/
+tests/
+scripts/

@@ -1,6 +1,6 @@
 [project]
 name = "elembio-spatialdata-analysis"
-version = "0.18.0"
+version = "0.18.1"
 description = "Load, QC-filter, normalize, and plot Element Biosciences AVITI24 SpatialData objects."
 readme = "README.md"
 license = "Apache-2.0"

@@ -9,29 +9,30 @@ Hands-on notebooks for working with Element Biosciences **SpatialData objects (S
 2. Get this `tutorials/` folder, keeping its layout (for example, clone the repository).
    Notebooks are not included in the pip install; see
    [Get the tutorials](../docs/installation.md#get-the-tutorials).
-3. Download the example datasets you need into **`tutorials/data/`**. Each notebook's
-   first section has copy-paste download commands. The datasets are large (see
-   [Example datasets](#example-datasets)), so check your free disk space first.
+3. Notebooks **stream from public S3 by default** — sufficient for run metadata, per-cell
+   tables, and the analyses shown here. Download a local copy to **`tutorials/data/`** when
+   you need image pyramids, segmentation masks, or other pixel-level work. Each notebook
+   includes optional download commands. SDOs are large (see
+   [Example datasets](#example-datasets)); confirm available disk space first.
 4. With the environment active, run `jupyter lab` from `tutorials/` and open a notebook.
 
-Notebooks read the data through relative paths: `data/…` from `GettingStarted.ipynb`,
-and `../data/…` from the notebooks in `case-studies/`. You don't need to unzip the
-`.zarr.zip` files.
+Do not unzip `.zarr.zip` files. Tutorials use `storage_options={"anon": True}` unless you
+point them at a local path.
 
-The notebooks are saved with their outputs, so you can read the results on GitHub
-before downloading anything.
+Notebooks are saved with outputs so you can review results on GitHub without running them.
 
 ## Notebooks
 
 | Notebook | Start here? | What it covers |
 |----------|:-----------:|----------------|
-| [`GettingStarted.ipynb`](GettingStarted.ipynb) | ✓ | Download and load an SDO, explore the per-cell tables inside it. No analysis. |
+| [`GettingStarted.ipynb`](GettingStarted.ipynb) | ✓ | Load an SDO and explore its per-cell tables. No analysis. |
 | [`case-studies/ops-crispr-tgfbr2-tnfa.ipynb`](case-studies/ops-crispr-tgfbr2-tnfa.ipynb) | | OPS CRISPR screen: TGFBR2 knockout RNA/morphology, then TNFα protein IF. |
 | [`case-studies/hela-tunicamycin-upr.ipynb`](case-studies/hela-tunicamycin-upr.ipynb) | | HeLa tunicamycin: 3′ RNA volcano and single-cell UPR score. |
 
 ## Example datasets
 
-Public, no AWS credentials required.
+Public; no AWS credentials required. Notebooks stream these anonymously by default.
+Optional download commands write to `tutorials/data/`.
 
 **Cytos-MPS_TNFa-CRISPR-Screen** (~111 GB) — used by the OPS CRISPR case study.
 
