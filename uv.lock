@@ -994,7 +994,7 @@ wheels = [
 
 [[package]]
 name = "elembio-spatialdata-analysis"
-version = "0.18.1"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "anndata" },
